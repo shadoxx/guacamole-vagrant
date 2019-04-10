@@ -1,0 +1,51 @@
+#!/bin/bash
+
+##########
+if [ ! -f /vagrant/db.passwd ]; then
+	export DBPASSWD=$(pwgen -1s 64)
+	echo "$DBPASSWD" > /vagrant/db.passwd
+else
+	export DBPASSWD=$(</vagrant/db.passwd)
+fi
+
+export GUAC_PROPERTIES=$(cat <<guac.properties
+# Hostname and port of guacamole proxy
+guacd-hostname: localhost
+guacd-port:     4822
+
+# Auth provider class
+auth-provider: net.sourceforge.guacamole.net.auth.mysql.MySQLAuthenticationProvider
+
+# MySQL properties
+mysql-hostname: localhost
+mysql-port: 3306
+mysql-database: guacamole
+mysql-username: guacamole
+mysql-password: $DBPASSWD
+guac.properties
+)
+##########
+
+export JAVA_HOME="/usr/lib/jvm/default-java"
+
+pushd .
+cd /home/vagrant/guacamole-client
+mvn package
+
+if [ -f "guacamole/target/guacamole-1.0.0.war" ]; then
+	install -d -o root -g tomcat8 -m 750 /etc/guacamole
+	mkdir -p /etc/guacamole/lib /etc/guacamole/extensions
+
+	ln -s /usr/share/java/mysql-connector-java-8.0.13.jar /etc/guacamole/lib
+	echo "$GUAC_PROPERTIES" > /etc/guacamole/guacamole.properties
+
+	rm -vrf /var/lib/tomcat8/webapps/ROOT
+	cp -v guacamole/target/guacamole-1.0.0.war /var/lib/tomcat8/webapps/ROOT.war
+
+  # Enable Guacamole extentions
+	cp -v extensions/guacamole-auth-jdbc/modules/guacamole-auth-jdbc-mysql/target/guacamole-auth-jdbc-mysql-1.0.0.jar /etc/guacamole/extensions
+	cp -v extensions/guacamole-auth-totp/target/guacamole-auth-totp-1.0.0.jar /etc/guacamole/extensions
+
+fi
+
+popd

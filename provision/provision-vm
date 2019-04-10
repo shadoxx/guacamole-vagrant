@@ -1,0 +1,28 @@
+#!/bin/bash
+
+## CONFIGURATION
+PROVISIONER_ROOT="/vagrant/provision"
+PROVISIONER_BIN="$PROVISIONER_ROOT/bin"
+PROVISIONER_CONF="$PROVISIONER_ROOT/conf"
+
+OS_PKGLIST=$(<$PROVISIONER_ROOT/default-pkglist)
+
+# Force VM to use the local apt caching proxy to speed up updates and downloads
+#echo "Acquire::http::Proxy \"http://192.168.42.221:3142\";" > /etc/apt/apt.conf.d/proxy
+
+## PRE-PROVISION COMMANDS
+apt update; apt dist-upgrade -y
+apt install -y ${OS_PKGLIST[@]}
+
+systemctl start haveged
+
+
+## SCRIPTED INSTALLATION TASKS
+for script in $(ls -1 $PROVISIONER_BIN | sort); do
+	echo -e "[*] Running $script"
+	. "$PROVISIONER_BIN/$script"
+done
+
+
+## POST-PROVISION COMMANDS
+systemctl restart tomcat8

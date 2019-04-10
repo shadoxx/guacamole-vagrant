@@ -1,0 +1,14 @@
+#!/bin/sh
+
+GUAC_SERVER_VERSION='1.0.0'
+GUAC_CLIENT_VERSION='1.0.0'
+
+if [ ! -d "/home/vagrant/guacamole-server" ]; then
+	# Checkout guacamole-server source from git
+	git clone --depth 1 -b $GUAC_SERVER_VERSION git://github.com/apache/guacamole-server.git /home/vagrant/guacamole-server
+fi
+
+if [ ! -d "/home/vagrant/guacamole-client" ]; then
+	# Checkout guacamole-client source from git
+	git clone --depth 1 -b $GUAC_CLIENT_VERSION git://github.com/apache/guacamole-client.git /home/vagrant/guacamole-client
+fi

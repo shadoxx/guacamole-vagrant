@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Packages needed for compiling the server from source
+server_pkglist=(
+	libcairo2-dev
+	libpng-dev
+	libjpeg-turbo8-dev
+	libossp-uuid-dev
+	libavcodec-dev
+	libavutil-dev
+	libswscale-dev
+	libfreerdp-dev
+	libpango1.0-dev
+	libssh2-1-dev
+	libpulse-dev
+	libssl-dev
+	libvorbis-dev
+	libwebp-dev
+)
+
+# Packages needed for compiling the client from source
+client_pkglist=(
+	openjdk-11-jdk-headless
+	maven
+	libmaven-javadoc-plugin-java
+)
+
+apt install -y ${server_pkglist[@]} ${client_pkglist[@]}
+
+# Install libturbojpeg-dev manually
+# dpkg -i /vagrant/lib/libjpeg-turbo-official_2.0.0_amd64.deb

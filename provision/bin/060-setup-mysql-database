@@ -1,0 +1,23 @@
+#!/bin/bash
+
+export DBPASSWD=$(</vagrant/db.passwd)
+export SCHEMA_DIR="/home/vagrant/guacamole-client/extensions/guacamole-auth-jdbc/modules/guacamole-auth-jdbc-mysql/schema"
+
+export CREATE_USER_SQL=$(cat <<createuser.sql
+CREATE USER 'guacamole'@'localhost' IDENTIFIED BY '$DBPASSWD';
+GRANT SELECT,INSERT,UPDATE,DELETE ON guacamole.* to 'guacamole'@'localhost';
+FLUSH PRIVILEGES;
+createuser.sql
+)
+
+export CREATE_DATABASE=$(cat <<createdatabase.sql
+CREATE DATABASE guacamole;
+createdatabase.sql
+)
+
+apt install -y mariadb-server-10.1
+dpkg -i /vagrant/lib/mysql-connector-java_8.0.13-1ubuntu18.04_all.deb
+
+echo $CREATE_DATABASE | mysql
+echo $CREATE_USER_SQL | mysql
+cat $SCHEMA_DIR/*.sql | mysql guacamole
